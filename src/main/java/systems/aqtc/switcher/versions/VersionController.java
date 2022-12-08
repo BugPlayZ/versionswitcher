@@ -72,7 +72,7 @@ public class VersionController {
       String homePath = version.getPath().replace("\\bin\\java.exe", "");
 
       Runtime.getRuntime().exec("cmd.exe /c assoc .jar=jarfile");
-      Runtime.getRuntime().exec("cmd.exe /c ftype jarfile=\"" + version.getPath() + "\" \"%1\"");
+      Runtime.getRuntime().exec("cmd.exe /c ftype jarfile=\"" + version.getPath() + "\" -jar \"%1\"");
 
       WindowsUtils.setEnvironmentVariable("JAVA_HOME", "\"" + homePath + "\"", false);
       WindowsUtils.setEnvironmentVariable("JAVA_HOME", "\"" + homePath + "\"", true);
