@@ -5,13 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
 import lombok.SneakyThrows;
 import systems.aqtc.switcher.utils.WindowsUtils;
 
 public class VersionController {
 
   private static final File[] PATHS = {new File("C:\\Program Files\\"),
-      new File(System.getProperty("user.home"))};
+          new File(System.getProperty("user.home"))};
 
   public String getJavaVersion() {
     return System.getProperty("java.version");
@@ -36,8 +37,8 @@ public class VersionController {
         for (File javaFile : javaFiles) {
           Map<String, String> details = WindowsUtils.getDetails(javaFile.getAbsolutePath());
           Version version = new Version(details.get("ProductName"), details.get("FileVersion"),
-              details.get("CompanyName"), details.get("FileDescription"),
-              javaFile.getAbsolutePath());
+                  details.get("CompanyName"), details.get("FileDescription"),
+                  javaFile.getAbsolutePath());
 
           versions.add(version);
         }
@@ -51,7 +52,7 @@ public class VersionController {
     List<File> javaFiles = new ArrayList<>();
 
     for (File file : (Objects.requireNonNull(
-        folder.listFiles() == null ? new File[0] : folder.listFiles()))) {
+            folder.listFiles() == null ? new File[0] : folder.listFiles()))) {
       if (file == null) {
         continue;
       }
@@ -68,14 +69,17 @@ public class VersionController {
 
   public boolean switchVersion(Version version) {
     try {
-      // TODO: Fix 'PATH' environment variable
+      String homePath = version.getPath().replace("\\bin\\java.exe", "");
 
       Runtime.getRuntime().exec("cmd.exe /c assoc .jar=jarfile");
       Runtime.getRuntime().exec("cmd.exe /c ftype jarfile=\"" + version.getPath() + "\" \"%1\"");
-      Runtime.getRuntime().exec("cmd.exe /c JAVA_HOME=" + version.getPath());
 
-      String[] paths = System.getenv("PATH").split(";");
+      WindowsUtils.setEnvironmentVariable("JAVA_HOME", "\"" + homePath + "\"", false);
+      WindowsUtils.setEnvironmentVariable("JAVA_HOME", "\"" + homePath + "\"", true);
+
+      String[] paths = System.getenv("Path").split(";");
       List<String> newPaths = new ArrayList<>();
+
       for (String path : paths) {
         if (path.contains("java") || path.contains("jdk") || path.contains("jre")) {
           continue;
@@ -84,10 +88,10 @@ public class VersionController {
         newPaths.add(path);
       }
 
-      System.setProperty("Path", String.join(";", newPaths));
+      newPaths.add(homePath + "\\bin");
 
-      Runtime.getRuntime().exec("cmd.exe /c setx PATH \"" + String.join(";", newPaths) + "\"");
-      Runtime.getRuntime().exec("cmd.exe /c set PATH \"" + String.join(";", newPaths) + "\"");
+      WindowsUtils.setEnvironmentVariable("Path", "\"" + String.join(";", newPaths) + "\"", false);
+      WindowsUtils.setEnvironmentVariable("Path", "\"" + String.join(";", newPaths) + "\"", true);
       return true;
     } catch (Exception e) {
       return false;

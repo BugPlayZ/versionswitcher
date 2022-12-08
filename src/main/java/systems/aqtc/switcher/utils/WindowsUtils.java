@@ -37,7 +37,6 @@ public class WindowsUtils {
     Pointer buffer = Kernel32.INSTANCE.LocalAlloc(WinBase.LMEM_ZEROINIT, infoSize);
 
     try {
-
       com.sun.jna.platform.win32.Version.INSTANCE.GetFileVersionInfo(fileToCheck.getAbsolutePath(), 0, infoSize, buffer);
 
       IntByReference outputSize = new IntByReference();
@@ -82,6 +81,11 @@ public class WindowsUtils {
     }
 
     return details;
+  }
+
+  @SneakyThrows
+  public static void setEnvironmentVariable(String key, String value, boolean machine) {
+    Runtime.getRuntime().exec("cmd.exe /c setx " + key + " " + value + (machine ? " /M" : ""));
   }
 
   private static String[] convertToString(short[] array) {
